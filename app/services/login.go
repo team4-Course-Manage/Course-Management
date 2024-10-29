@@ -11,7 +11,6 @@ import (
 
 var db *gorm.DB
 
-// InitDB 初始化数据库连接
 func InitDB() error {
 	var err error
 	dsn := "user:password@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
