@@ -10,4 +10,5 @@ type User struct {
 	Password string `gorm:"size:255"`
 	Email    string `gorm:"uniqueIndex;size:255"`
 	Phone    string `gorm:"uniqueIndex;size:255"`
+	TOTPSecret string `gorm:"size:255"` //存储TOTP密钥
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"Course-Management/app/models"
 	"Course-Management/app/services"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -22,7 +23,30 @@ func (ctrl RegisterController) PhoneRegister(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Phone registered successfully"})
+	// 创建用户对象
+	user := &models.User{Phone: phone}
+
+	// 生成 TOTP
+	secret, qrCode, err := services.GenerateTOTP(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate TOTP key"})
+		return
+	}
+
+	// 将 TOTP 密钥保存到用户对象
+	user.TOTPSecret = secret
+
+	// 保存用户信息到数据库
+	if err := services.SaveUser(user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Phone registered successfully",
+		"secret":  secret,
+		"qrCode":  qrCode,
+	})
 }
 
 func (ctrl RegisterController) EmailRegister(c *gin.Context) {
@@ -39,7 +63,30 @@ func (ctrl RegisterController) EmailRegister(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Email registered successfully"})
+	// 创建用户对象
+	user := &models.User{Email: email}
+
+	// 生成 TOTP
+	secret, qrCode, err := services.GenerateTOTP(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate TOTP key"})
+		return
+	}
+
+	// 将 TOTP 密钥保存到用户对象
+	user.TOTPSecret = secret
+
+	// 保存用户信息到数据库
+	if err := services.SaveUser(user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Email registered successfully",
+		"secret":  secret,
+		"qrCode":  qrCode,
+	})
 }
 
 var Register = RegisterController{}

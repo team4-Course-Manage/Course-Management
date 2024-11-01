@@ -13,6 +13,7 @@ func (c *loginCtl) Login(ctx *gin.Context) {
 	// 从请求中获取用户名和密码
 	username := ctx.PostForm("username")
 	password := ctx.PostForm("password")
+	totpCode := ctx.PostForm("totp_code")
 
 	// 验证用户名和密码是否为空
 	if username == "" || password == "" {
@@ -27,7 +28,11 @@ func (c *loginCtl) Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
 		return
 	}
-
+	// 验证 TOTP 代码
+	if !services.VerifyTOTP(user, totpCode) {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid TOTP code"})
+		return
+	}
 	// 登录成功，生成token
 	token := "1"
 
