@@ -9,22 +9,15 @@ import (
 func Init(r *gin.Engine) {
 	fmt.Println("路由已加载")
 	// 初始化
-	router := gin.Default()
+	route := gin.Default()
 
-	// 登录注册
-	register := router.Group("/")
+	// 登录
+	login := route.Group("/")
 	{
-		register.POST("/register", controllers.Register.PhoneRegister)
-		register.POST("/register", controllers.Register.EmailRegister)
-	}
-
-	login := router.Group("/")
-	{
-		login.POST("/login", controllers.Login.Login)
-		// login.GET("/captcha", controllers.Login.Captcha)
-		//login.POST("/updatePwd", controllers.Login.UpdatePwd)
+		authController := new(controllers.AuthController)
+		login.POST("/login", authController.LoginHandler)
 	}
 
 	// 启动
-	router.Run(":8080")
+	route.Run(":8080")
 }
