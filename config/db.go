@@ -2,28 +2,47 @@ package config
 
 import (
 	"fmt"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"log"
 	"os"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var (
+	DB1 *gorm.DB
+	DB2 *gorm.DB
+)
 
 func ConnectDatabase() {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_NAME"),
+	// 业务数据库
+	dsn1 := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		os.Getenv("DB1_USER"),
+		os.Getenv("DB1_PASSWORD"),
+		os.Getenv("DB1_HOST"),
+		os.Getenv("DB1_PORT"),
+		os.Getenv("DB1_NAME"),
 	)
-
 	var err error
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	DB1, err = gorm.Open(mysql.Open(dsn1), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to connect to database 1: %v", err)
+	} else {
+		log.Println("Database 1 connection established")
 	}
 
-	log.Println("Database connection established")
+	// OAuth 认证数据库
+	dsn2 := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		os.Getenv("DB2_USER"),
+		os.Getenv("DB2_PASSWORD"),
+		os.Getenv("DB2_HOST"),
+		os.Getenv("DB2_PORT"),
+		os.Getenv("DB2_NAME"),
+	)
+	DB2, err = gorm.Open(mysql.Open(dsn2), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect to database 2: %v", err)
+	} else {
+		log.Println("Database 2 connection established")
+	}
 }
