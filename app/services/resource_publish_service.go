@@ -50,7 +50,7 @@ func (s *ResourceService) PublishResource(courseID, title, description, url, pub
 }
 
 // GetResourceByID 根据资源ID查询单个资源
-func (s *ResourceService) GetResourceByID(resID uint) (*models.Resource, error) {
+func (s *ResourceService) GetResourceByID(resID string) (*models.Resource, error) {
 	if s.DB == nil {
 		return nil, errors.New("DB is not initialized")
 	}

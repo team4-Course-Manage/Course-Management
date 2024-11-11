@@ -1,7 +1,6 @@
 package models
 
 import (
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -15,4 +14,3 @@ type Resource struct {
 	PublisherID string    `gorm:"column:PublisherID;not null"`
 	PublishedAt time.Time `gorm:"column:PublishedAt;autoCreateTime"` // 默认当前时间
 }
-
