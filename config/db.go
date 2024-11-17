@@ -46,3 +46,19 @@ func ConnectDatabase() {
 		log.Println("Database 2 connection established")
 	}
 }
+
+func AutoMigrate(models ...interface{}) {
+	err := DB1.AutoMigrate(models...)
+	if err != nil {
+		log.Fatalf("Failed to auto-migrate database 1: %v", err)
+	} else {
+		log.Println("Database 1 auto-migration completed")
+	}
+
+	err = DB2.AutoMigrate(models...)
+	if err != nil {
+		log.Fatalf("Failed to auto-migrate database 2: %v", err)
+	} else {
+		log.Println("Database 2 auto-migration completed")
+	}
+}

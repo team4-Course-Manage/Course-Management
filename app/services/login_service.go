@@ -1,13 +1,14 @@
 package services
 
 import (
-	"Course-Management/app/models"
-	"Course-Management/config"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+
+	"Course-Management/app/models"
 
 	"gorm.io/gorm"
 )
@@ -18,72 +19,83 @@ type LoginService struct {
 }
 
 func NewLoginService(db1, db2 *gorm.DB) *LoginService {
-	return &LoginService{
-		DB1: db1,
-		DB2: db2,
+	if db1 == nil || db2 == nil {
+		panic("Database connections (DB1, DB2) must not be nil")
 	}
+	return &LoginService{DB1: db1, DB2: db2}
 }
 
 type UserInfo struct {
-	AccessToken string
-	Name        string
-	Institute   string
+	AccessToken string `json:"access_token,omitempty"`
+	Name        string `json:"name"`
+	Institute   string `json:"institute"`
 }
 
-func (s *LoginService) VerifyCredentials(userID, password string) (UserInfo, error) {
+// 登录（使用 UserID 和 Password）
+func (s *LoginService) Login(userID, password string) (UserInfo, error) {
+	// 确保数据库连接已经初始化
 	if s.DB1 == nil {
 		return UserInfo{}, errors.New("DB1 is not initialized")
 	}
-	if s.DB2 == nil {
-		return UserInfo{}, errors.New("DB2 is not initialized")
-	}
+
 	var student models.Student
 	var teacher models.Teacher
 
-	// 检查 student 表
+	// 检查 Student 表
 	if err := s.DB1.Where("student_id = ? AND password = ?", userID, password).First(&student).Error; err == nil {
 		return UserInfo{Name: student.Name, Institute: student.Institute}, nil
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return UserInfo{}, err
+		return UserInfo{}, fmt.Errorf("database query error: %v", err)
 	}
 
-	// 检查 teacher 表
+	// 检查 Teacher 表
 	if err := s.DB1.Where("teacher_id = ? AND password = ?", userID, password).First(&teacher).Error; err == nil {
 		return UserInfo{Name: teacher.Name, Institute: teacher.Institute}, nil
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return UserInfo{}, err
+		return UserInfo{}, fmt.Errorf("database query error: %v", err)
 	}
 
+	// 如果用户信息不存在
 	return UserInfo{}, errors.New("invalid user ID or password")
 }
 
-func (s *LoginService) Login(userID, password string) (UserInfo, error) {
-	userInfo, err := s.VerifyCredentials(userID, password)
-	if err != nil {
-		return UserInfo{}, fmt.Errorf("failed to verify credentials: %w", err)
+// 使用 GitHub OAuth 登录
+func (s *LoginService) LoginWithGithub(code string) (UserInfo, error) {
+	clientID := os.Getenv("CLIENT_ID")
+	clientSecret := os.Getenv("CLIENT_SECRET")
+
+	// 确保环境变量已加载
+	if clientID == "" || clientSecret == "" {
+		return UserInfo{}, errors.New("client ID or secret not configured")
 	}
 
+	// 通过 GitHub 获取 access token
+	tokenURL := "https://github.com/login/oauth/access_token"
 	payload := map[string]string{
-		"grant_type":    "password",
-		"username":      userID,
-		"password":      password,
-		"client_id":     config.OAuthSettings.ClientID,
-		"client_secret": config.OAuthSettings.ClientSecret,
+		"client_id":     clientID,
+		"client_secret": clientSecret,
+		"code":          code,
 	}
-
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		return UserInfo{}, fmt.Errorf("failed to marshal request payload: %w", err)
+		return UserInfo{}, fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 
-	resp, err := http.Post(config.OAuthSettings.TokenURL, "application/json", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", tokenURL, bytes.NewBuffer(jsonData))
 	if err != nil {
-		return UserInfo{}, fmt.Errorf("failed to contact OAuth server: %w", err)
+		return UserInfo{}, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return UserInfo{}, fmt.Errorf("failed to send request to GitHub: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return UserInfo{}, errors.New("authentication failed at OAuth server")
+		return UserInfo{}, fmt.Errorf("GitHub responded with status: %d", resp.StatusCode)
 	}
 
 	var tokenResponse struct {
@@ -93,6 +105,49 @@ func (s *LoginService) Login(userID, password string) (UserInfo, error) {
 		return UserInfo{}, fmt.Errorf("failed to parse token response: %w", err)
 	}
 
-	userInfo.AccessToken = tokenResponse.AccessToken
+	if tokenResponse.AccessToken == "" {
+		return UserInfo{}, errors.New("received empty access token")
+	}
+
+	// 使用 access token 获取用户信息
+	userInfo, err := s.getGithubUserInfo(tokenResponse.AccessToken)
+	if err != nil {
+		return UserInfo{}, fmt.Errorf("failed to fetch user info: %w", err)
+	}
+
 	return userInfo, nil
+}
+
+// 通过 Access Token 获取 GitHub 用户信息
+func (s *LoginService) getGithubUserInfo(accessToken string) (UserInfo, error) {
+	userURL := "https://api.github.com/user"
+	req, err := http.NewRequest("GET", userURL, nil)
+	if err != nil {
+		return UserInfo{}, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return UserInfo{}, fmt.Errorf("failed to send request to GitHub: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return UserInfo{}, fmt.Errorf("GitHub responded with status: %d", resp.StatusCode)
+	}
+
+	var githubUser struct {
+		Name    string `json:"name"`
+		Company string `json:"company"`
+		Email   string `json:"email"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&githubUser); err != nil {
+		return UserInfo{}, fmt.Errorf("failed to parse user info: %w", err)
+	}
+
+	return UserInfo{
+		Name:      githubUser.Name,
+		Institute: githubUser.Company,
+	}, nil
 }

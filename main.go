@@ -6,6 +6,7 @@ import (
 
 	"Course-Management/config"
 	"Course-Management/routes"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
