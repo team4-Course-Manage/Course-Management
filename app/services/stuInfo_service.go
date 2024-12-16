@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"Course-Management/app/models"
+
 	"gorm.io/gorm"
 )
 
@@ -15,6 +16,20 @@ type StuInfoService struct {
 
 func NewStuInfoService(db1 *gorm.DB) *StuInfoService {
 	return &StuInfoService{DB1: db1}
+}
+
+// GetAllStudents 获取所有学生信息
+func (s *StuInfoService) GetAllStudents() ([]models.Student, error) {
+	var students []models.Student
+
+	if err := s.DB1.Find(&students).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("no students found")
+		}
+		return nil, fmt.Errorf("database query error: %v", err)
+	}
+
+	return students, nil
 }
 
 // GetStudentByID 根据 StudentID 获取学生信息

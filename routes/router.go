@@ -35,14 +35,14 @@ func Init(r *gin.Engine) {
 		importGroup.POST("/students", importController.ImportStudents)
 	}
 
-
 	// 学生信息
 	stuInfo := route.Group("/stuInfo")
 	{
 		stuInfoService := services.NewStuInfoService(config.DB1)
 		stuInfoController := controllers.NewStuInfoController(stuInfoService)
-		stuInfo.POST("/getStuInfoByName", stuInfoController.GetStudentInfoByName)
-		stuInfo.POST("/getStuInfoByID", stuInfoController.GetStudentInfoByID)
+		stuInfo.GET("/getAllStudents", stuInfoController.GetAllStudents)
+		stuInfo.GET("/getStuInfoByName", stuInfoController.GetStudentInfoByName)
+		stuInfo.GET("/getStuInfoByID", stuInfoController.GetStudentInfoByID)
 	}
 
 	// 公告
