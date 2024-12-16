@@ -23,6 +23,18 @@ func Init(r *gin.Engine) {
 		login.POST("/login", authController.LoginHandler)
 		login.POST("/login/github", authController.LoginWithGithubHandler)
 	}
+	// 批量导入学生的路由
+	importGroup := r.Group("/import")
+	{
+		// 创建导入服务
+		importService := services.NewImportService(config.DB1)
+		// 创建导入控制器
+		importController := controllers.NewImportController(importService)
+
+		// 注册批量导入学生的路由
+		importGroup.POST("/students", importController.ImportStudents)
+	}
+
 
 	// 学生信息
 	stuInfo := route.Group("/stuInfo")
