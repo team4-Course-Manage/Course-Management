@@ -61,8 +61,8 @@ func (s *LoginService) Login(userID, password string) (UserInfo, error) {
 
 // 使用 GitHub OAuth 登录
 func (s *LoginService) LoginWithGithub(code string) (UserInfo, error) {
-	clientID := os.Getenv("CLIENT_ID")
-	clientSecret := os.Getenv("CLIENT_SECRET")
+	clientID := os.Getenv("OAUTH_CLIENT_ID")
+	clientSecret := os.Getenv("OAUTH_CLIENT_SECRET")
 
 	// 确保环境变量已加载
 	if clientID == "" || clientSecret == "" {

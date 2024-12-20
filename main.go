@@ -6,7 +6,8 @@ import (
 
 	"Course-Management/config"
 	"Course-Management/routes"
-
+	"Course_Management/app/controllers"
+	"Course_Management/app/services"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -20,13 +21,20 @@ func main() {
 
 	//连接数据库
 	config.ConnectDatabase()
-
+	// 初始化数据库
+	db := config.InitDB()
+	defer db.Close()
 	//连接oauth服务
 	config.LoadOAuthConfig()
 
 	//初始化router
 	r := gin.Default()
 
+	projectMemberService := &services.ProjectMemberService{DB: db}
+	projectMemberController := &controllers.ProjectMemberController{ProjectMemberService: projectMemberService}
+	// 路由定义
+	r.GET("/api/project/:project_id/members", projectMemberController.GetProjectMembers)
+	r.POST("/api/project/:project_id/add_member", projectMemberController.AddProjectMember)
 	routes.Init(r)
 
 	// 开启服务

@@ -57,6 +57,28 @@ func Init(r *gin.Engine) {
 		Project.GET("/count", projectController.CountProjects)
 	}
 
+	// 学生信息
+	stuInfo := route.Group("/stuInfo")
+	{
+		stuInfoService := services.NewStuInfoService(config.DB1)
+		stuInfoController := controllers.NewStuInfoController(stuInfoService)
+		stuInfo.GET("/getAllStudents", stuInfoController.GetAllStudents)
+		stuInfo.GET("/getStuInfoByName", stuInfoController.GetStudentInfoByName)
+		stuInfo.GET("/getStuInfoByID", stuInfoController.GetStudentInfoByID)
+	}
+
+	// 公告
+	announce := route.Group("/announce")
+	{
+		announceController := controllers.NewAnnouncementController()
+		announce.POST("/post", announceController.PostAnnouncement)
+		announce.POST("/addAnnouncement", announceController.PostAnnouncement)
+		announce.POST("/getAnnouncements", announceController.GetAnnouncements)
+		announce.POST("/getAnnouncementByID", announceController.GetAnnouncementByID)
+		announce.POST("/updateAnnouncement", announceController.UpdateAnnouncement)
+		announce.POST("/deleteAnnouncement", announceController.DeleteAnnouncement)
+
+	}
 
 	// 启动
 	route.Run(":8080")
