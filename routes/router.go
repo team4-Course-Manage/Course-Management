@@ -34,6 +34,28 @@ func Init(r *gin.Engine) {
 		// 注册批量导入学生的路由
 		importGroup.POST("/students", importController.ImportStudents)
 	}
+	// 汇报顺序功能
+	report := r.Group("/report")
+	{
+		reportService := services.NewReportService(config.DB1)
+		reportController := controllers.NewReportController(reportService)
+
+		report.GET("/weekly", reportController.GetWeeklyOrder)
+		report.POST("/choose", reportController.ChooseOrder)
+	}
+
+	Project := r.Group("/project")
+	{
+		projectService := services.NewProjectService(config.DB1)
+		projectController := controllers.NewProjectController(projectService)
+
+
+		Project.POST("/create", projectController.CreateProject)
+		Project.PUT("/update", projectController.UpdateProject)
+		Project.GET("/list", projectController.ListProjects)
+		Project.GET("/details", projectController.GetProjectDetails)
+		Project.GET("/count", projectController.CountProjects)
+	}
 
 
 	// 启动
