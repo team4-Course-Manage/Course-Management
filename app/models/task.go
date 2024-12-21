@@ -3,17 +3,16 @@ package models
 import (
 	"time"
 )
-type Task struct {
-	TaskID      string `gorm:"column:task_id;not null"`      // 任务 ID
-	ProjectID   string `gorm:"column:project_id;not null"`   // 项目 ID
-	AssigneeID  string `gorm:"column:assignee_id;not null"`  // 分配任务的成员 ID
-	Title       string `gorm:"column:title;not null"`        // 任务标题
-	Description string `gorm:"column:description"`           // 任务描述
-	Status      string `gorm:"column:status;default:'todo'"` // 状态，默认值为 "todo"
-	DueDate     string `gorm:"column:due_date"`              // 截止日期
-}
 
-// TableName 指定表名
-func (Task) TableName() string {
-	return "task"
+type Task struct {
+	TaskId          int       `gorm:"column:task_id;primaryKey;autoIncrement"`
+	TaskName        string    `gorm:"column:task_name"`
+	ProjectId       int       `gorm:"column:project_name"`
+	Subject         string    `gorm:"column:subject"`
+	TaskDescription string    `gorm:"column:task_description"`
+	ReceiverId      int       `gorm:"column:receiver_id"`
+	PrincipalId     int       `gorm:"column:principal_id"`
+	Priority        string    `gorm:"column:priority"`
+	TaskDate        time.Time `gorm:"column:task_date"`
+	TaskStatus      string    `gorm:"column:task_status"`
 }
