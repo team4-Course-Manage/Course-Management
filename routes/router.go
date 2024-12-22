@@ -49,12 +49,18 @@ func Init(r *gin.Engine) {
 		projectService := services.NewProjectService(config.DB1)
 		projectController := controllers.NewProjectController(projectService)
 
-
 		Project.POST("/create", projectController.CreateProject)
 		Project.PUT("/update", projectController.UpdateProject)
 		Project.GET("/list", projectController.ListProjects)
 		Project.GET("/details", projectController.GetProjectDetails)
 		Project.GET("/count", projectController.CountProjects)
+
+		// 项目成员相关路由
+		projectMemberService := services.NewProjectMemberService(config.DB1)
+		projectMemberController := controllers.NewProjectMemberController(projectMemberService)
+
+		Project.POST("/:project_id/add_member", projectMemberController.AddMember)
+		Project.GET("/:project_id/get_members", projectMemberController.GetMembers)
 	}
 
 	// 学生信息

@@ -1,8 +1,5 @@
 package models
 
-import (
-	"time"
-)
 
 type ProjectMember struct {
 	ProjectID string `gorm:"column:project_id;not null"` // 项目 ID

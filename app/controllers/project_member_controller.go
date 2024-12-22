@@ -1,57 +1,54 @@
 package controllers
 
 import (
-	"course_management/app/models"
-	"course_management/app/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"Course-Management/app/services"
 )
 
-// ProjectMemberController 控制器，处理项目组成员相关的 HTTP 请求
 type ProjectMemberController struct {
-	ProjectMemberService *services.ProjectMemberService
+	Service *services.ProjectMemberService
 }
 
-// 获取项目成员列表
-func (pmc *ProjectMemberController) GetProjectMembers(c *gin.Context) {
-	projectID := c.Param("project_id")
+// NewProjectMemberController 构造函数
+func NewProjectMemberController(service *services.ProjectMemberService) *ProjectMemberController {
+	return &ProjectMemberController{Service: service}
+}
 
-	// 调用服务层
-	members, err := pmc.ProjectMemberService.GetProjectMembers(projectID)
+// AddMember 添加成员到项目
+func (c *ProjectMemberController) AddMember(ctx *gin.Context) {
+	var input struct {
+		ProjectID string `json:"project_id" binding:"required"`
+		MemberID  string `json:"member_id" binding:"required"`
+	}
+
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := c.Service.AddMember(input.ProjectID, input.MemberID); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Member added successfully"})
+}
+
+// GetMembers 获取项目成员列表
+func (c *ProjectMemberController) GetMembers(ctx *gin.Context) {
+	projectID := ctx.Param("project_id")
+	if projectID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Project ID is required"})
+		return
+	}
+
+	memberIDs, err := c.Service.GetMembers(projectID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch project members"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"project_id": projectID,
-		"members":    members,
-	})
-}
-
-// 添加项目成员
-func (pmc *ProjectMemberController) AddProjectMember(c *gin.Context) {
-	projectID := c.Param("project_id")
-
-	// 解析请求体
-	var requestBody struct {
-		MemberID string `json:"member_id"`
-	}
-	if err := c.ShouldBindJSON(&requestBody); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
-		return
-	}
-
-	// 调用服务层
-	if err := pmc.ProjectMemberService.AddProjectMember(projectID, requestBody.MemberID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message":    "Member added successfully",
-		"project_id": projectID,
-		"member_id":  requestBody.MemberID,
-	})
+	ctx.JSON(http.StatusOK, gin.H{"members": memberIDs})
 }

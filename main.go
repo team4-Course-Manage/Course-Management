@@ -30,12 +30,7 @@ func main() {
 	//初始化router
 	r := gin.Default()
 
-	projectMemberService := &services.ProjectMemberService{DB: db}
-	projectMemberController := &controllers.ProjectMemberController{ProjectMemberService: projectMemberService}
-	// 路由定义
-	r.GET("/api/project/:project_id/members", projectMemberController.GetProjectMembers)
-	r.POST("/api/project/:project_id/add_member", projectMemberController.AddProjectMember)
-	routes.Init(r)
+	
 
 	// 开启服务
 	port := os.Getenv("PORT")
