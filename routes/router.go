@@ -21,7 +21,9 @@ func Init(r *gin.Engine) {
 		authController := controllers.NewAuthController(loginService)
 
 		login.POST("/login", authController.LoginHandler)
-		login.POST("/login/github", authController.LoginWithGithubHandler)
+		// login.POST("/login/github", authController.LoginWithGithubHandler)
+		login.POST("/login/gitea", authController.LoginWithGiteaHandler)
+		login.POST("/callback", authController.CallbackHandler)
 	}
 	// 批量导入学生的路由
 	importGroup := r.Group("/import")
@@ -56,6 +58,19 @@ func Init(r *gin.Engine) {
 		announce.POST("/updateAnnouncement", announceController.UpdateAnnouncement)
 		announce.POST("/deleteAnnouncement", announceController.DeleteAnnouncement)
 
+	}
+
+	// Git 服务
+	gitService := services.NewGitService()
+	gitController := controllers.NewGitController(gitService)
+	gitGroup := r.Group("/git")
+	{
+		gitGroup.POST("/createRepo", gitController.CreateRepository)
+		gitGroup.GET("/repos/:repo_name", gitController.GetRepository)
+		gitGroup.DELETE("/repos/:repo_name", gitController.DeleteRepository)
+		gitGroup.GET("/repos", gitController.ListRepositories)
+		gitGroup.PUT("/repos/:repo_name/collaborators", gitController.AddCollaborator)
+		gitGroup.GET("/repos/:repo_name/commits", gitController.ListCommits)
 	}
 
 	// 启动
