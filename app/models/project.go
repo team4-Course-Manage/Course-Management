@@ -37,7 +37,7 @@ func (ps *ProjectStatus) UnmarshalJSON(b []byte) error {
 }
 
 type Project struct {
-	ID          string        `gorm:"column:projectID;not null" json:"ID"`
+	ID          int           `gorm:"column:projectID;primaryKey;autoIncrement;not null" json:"ID"`
 	Name        string        `gorm:"column:project_name;not null" json:"name"`
 	Description string        `gorm:"column:description" json:"description"`
 	Status      ProjectStatus `gorm:"column:Status;type:enum('As_Planned','At_risk','Deviated','Stopped','Not_Begun','Finished');not null" json:"status"` // 使用枚举类型

@@ -42,7 +42,6 @@ func (c *ProjectController) CreateProject(ctx *gin.Context) {
 
 	// 创建项目
 	project := models.Project{
-		ID:          input.CreatorID,
 		Name:        input.Name,
 		Description: input.Description,
 		Status:      input.Status,
@@ -82,7 +81,7 @@ func (c *ProjectController) UpdateProject(ctx *gin.Context) {
 	updates := map[string]interface{}{}
 
 	if input.Name != "" {
-		updates["name"] = input.Name
+		updates["project_name"] = input.Name
 	}
 	if input.Description != "" {
 		updates["description"] = input.Description
