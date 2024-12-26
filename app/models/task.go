@@ -7,11 +7,11 @@ import (
 type Task struct {
 	TaskId          int       `gorm:"column:task_id;primaryKey;autoIncrement"`
 	TaskName        string    `gorm:"column:task_name"`
-	ProjectId       int       `gorm:"column:project_name"`
-	Subject         string    `gorm:"column:subject"`
-	TaskDescription string    `gorm:"column:task_description"`
-	ReceiverId      int       `gorm:"column:receiver_id"`
-	PrincipalId     int       `gorm:"column:principal_id"`
+	ProjectId       int       `gorm:"column:projeceID"`
+	Subject         string    `gorm:"column:theme"`
+	TaskDescription string    `gorm:"column:description"`
+	ReceiverId      int       `gorm:"column:acceptor_ID"`
+	PrincipalId     int       `gorm:"column:responible_member"`
 	Priority        string    `gorm:"column:priority"`
 	TaskDate        time.Time `gorm:"column:task_date"`
 	TaskStatus      string    `gorm:"column:task_status"`

@@ -3,6 +3,7 @@ package services
 import (
 	"Course-Management/app/models"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -27,10 +28,24 @@ func (gs *GroupService) CreateGroup(group models.Group) (models.Group, error) {
 }
 
 // GetGroupList 获取组列表的方法
-func (gs *GroupService) GetGroupList() ([]models.Group, error) {
+func (gs *GroupService) GetGroupList() ([]map[string]string, error) {
 	var groups []models.Group
 	result := gs.DB.Find(&groups)
-	return groups, result.Error
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	var groupList []map[string]string
+	for _, group := range groups {
+		groupInfo := map[string]string{
+			"GroupID":           fmt.Sprintf("%d", group.GroupId),
+			"GroupName":         group.GroupName,
+			"GroupMemberNumber": fmt.Sprintf("%d", group.MaxMembers),
+		}
+		groupList = append(groupList, groupInfo)
+	}
+
+	return groupList, nil
 }
 
 // JoinGroup 申请加入组的方法，判断人数是否满员等逻辑
