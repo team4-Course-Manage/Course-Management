@@ -42,6 +42,7 @@ func (c *ProjectController) CreateProject(ctx *gin.Context) {
 
 	// 创建项目
 	project := models.Project{
+		ID:          input.CreatorID,
 		Name:        input.Name,
 		Description: input.Description,
 		Status:      input.Status,

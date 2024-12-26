@@ -9,11 +9,12 @@ import (
 
 // 定义有效的项目状态
 var validStatuses = []models.ProjectStatus{
-	models.StatusPlanned,
-	models.StatusInProgress,
-	models.StatusCompleted,
-	models.StatusOnHold,
-	models.StatusCancelled,
+	models.StatusAsPlanned,
+	models.StatusAtRisk,
+	models.StatusDeviated,
+	models.StatusStopped,
+	models.StatusFinished,
+	models.StatusNotBegun,
 }
 
 // IsValidStatus 验证状态是否合法
@@ -81,7 +82,7 @@ func (s *ProjectService) ListProjects(creatorID string) ([]models.Project, error
 	var projects []models.Project
 
 	// 查询项目列表
-	if err := s.DB.Select("id, name").Where("creator_id = ?", creatorID).Find(&projects).Error; err != nil {
+	if err := s.DB.Select("projectID, project_name").Where("creator_id = ?", creatorID).Find(&projects).Error; err != nil {
 		return nil, err
 	}
 
