@@ -172,20 +172,18 @@ func (s *LoginService) getGiteaUserInfo(accessToken, baseURL string) (UserInfo, 
 
 // 处理回调逻辑
 func (s *LoginService) HandleCallback(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodGet {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var reqBody struct {
-		Code string `json:"code"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
+	code := r.URL.Query().Get("code")
+	if code == "" {
+		http.Error(w, "Missing code parameter", http.StatusBadRequest)
 		return
 	}
 
-	success, err := s.LoginWithGitea(reqBody.Code)
+	success, err := s.LoginWithGitea(code)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Login failed: %v", err), http.StatusInternalServerError)
 		return
