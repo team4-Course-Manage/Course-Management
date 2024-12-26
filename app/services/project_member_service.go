@@ -2,6 +2,7 @@ package services
 
 import (
 	"Course-Management/app/models"
+
 	"gorm.io/gorm"
 )
 
@@ -33,16 +34,15 @@ func (s *ProjectMemberService) AddMember(projectID, memberID string) error {
 	return nil
 }
 
-
 // GetMembers 获取项目的所有成员（仅返回成员 ID）
 func (s *ProjectMemberService) GetMembers(projectID string) ([]string, error) {
 	var memberIDs []string
 
 	// 查询项目成员的 MemberID
 	err := s.DB.Model(&models.ProjectMember{}).
-		Select("member_id").
-		Where("project_id = ?", projectID).
-		Pluck("member_id", &memberIDs).Error
+		Select("memberID").
+		Where("projectID = ?", projectID).
+		Pluck("memberID", &memberIDs).Error
 
 	if err != nil {
 		return nil, err
